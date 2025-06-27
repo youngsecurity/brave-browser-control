@@ -1,0 +1,21 @@
+{
+  "name": "ant.dir.ant.anthropic.brave-control",
+  "version": "0.1.1",
+  "description": "Control Brave Browser tabs, windows, and navigation",
+  "main": "server/index.js",
+  "type": "module",
+  "scripts": {
+    "start": "node server/index.js"
+  },
+  "keywords": [
+    "brave",
+    "browser",
+    "automation",
+    "mcp"
+  ],
+  "author": "Anthropic",
+  "license": "MIT",
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^0.6.0"
+  }
+}
