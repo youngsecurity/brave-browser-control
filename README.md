@@ -60,5 +60,9 @@ This extension requires access to control Brave Browser through AppleScript. It 
 - Read and modify web page content
 - Navigate to any URL
 - Execute JavaScript in browser tabs
+- Open, close, and switch between tabs
+- Access information about open tabs (URL, title)
+
+**Warning:** This extension provides powerful control over your browser. Only use it with trusted applications and be cautious about the commands you authorize. Since this tool can execute any JavaScript, it can potentially be used to perform malicious actions. Always review the scripts you are about to execute.
 
 Use with appropriate caution and only grant access when necessary.

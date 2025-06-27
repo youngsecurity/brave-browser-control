@@ -1,5 +1,5 @@
 {
-  "name": "ant.dir.ant.anthropic.brave-control",
+  "name": "ant.dir.ant.TariqAlagha.brave-control",
   "version": "0.1.1",
   "description": "Control Brave Browser tabs, windows, and navigation",
   "main": "server/index.js",
@@ -13,7 +13,7 @@
     "automation",
     "mcp"
   ],
-  "author": "Anthropic",
+  "author": "Tariq Alagha",
   "license": "MIT",
   "dependencies": {
     "@modelcontextprotocol/sdk": "^0.6.0"
