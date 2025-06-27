@@ -42,17 +42,10 @@ Get the text content of a web page.
 
 - macOS (uses AppleScript)
 - Brave Browser installed
-- Node.js >= 16.0.0
 
 ## Installation
 
-```bash
-npm install
-```
-
-## Usage
-
-The extension runs as an MCP server and communicates with Claude through stdio.
+To install this extension for Claude Desktop, download and open the `brave-browser-control.dxt` file.
 
 ## Security
 
