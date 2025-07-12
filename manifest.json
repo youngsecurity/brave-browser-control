@@ -1,7 +1,7 @@
 {
   "dxt_version": "0.1",
   "name": "brave-control",
-  "display_name": "Brave (AppleScript)",
+  "display_name": "Brave Control",
   "version": "0.1.1",
   "description": "Control Brave Browser tabs, windows, and navigation",
   "long_description": "This extension allows Claude to interact with Brave Browser, enabling tab management, navigation, page content reading, and browser automation. It uses Brave's AppleScript API to control the browser programmatically.\n\nThis extension is not affiliated with or endorsed by Brave Software, Inc.",
@@ -16,141 +16,43 @@
   "tools": [
     {
       "name": "open_url",
-      "description": "Open a URL in Brave",
-      "input_schema": {
-        "type": "object",
-        "properties": {
-          "url": {
-            "type": "string",
-            "description": "URL to open"
-          },
-          "new_tab": {
-            "type": "boolean",
-            "description": "Open in a new tab (default: true)",
-            "default": true
-          }
-        },
-        "required": ["url"]
-      }
+      "description": "Open a URL in Brave"
     },
     {
       "name": "get_current_tab",
-      "description": "Get information about the current active tab",
-      "input_schema": {
-        "type": "object",
-        "properties": {}
-      }
+      "description": "Get information about the current active tab"
     },
     {
       "name": "list_tabs",
-      "description": "List all open tabs in Brave",
-      "input_schema": {
-        "type": "object",
-        "properties": {
-          "window_id": {
-            "type": "number",
-            "description": "Specific window ID to list tabs from (optional)"
-          }
-        }
-      }
+      "description": "List all open tabs in Brave"
     },
     {
       "name": "close_tab",
-      "description": "Close a specific tab",
-      "input_schema": {
-        "type": "object",
-        "properties": {
-          "tab_id": {
-            "type": "number",
-            "description": "ID of the tab to close"
-          }
-        },
-        "required": ["tab_id"]
-      }
+      "description": "Close a specific tab"
     },
     {
       "name": "switch_to_tab",
-      "description": "Switch to a specific tab",
-      "input_schema": {
-        "type": "object",
-        "properties": {
-          "tab_id": {
-            "type": "number",
-            "description": "ID of the tab to switch to"
-          }
-        },
-        "required": ["tab_id"]
-      }
+      "description": "Switch to a specific tab"
     },
     {
       "name": "reload_tab",
-      "description": "Reload a tab",
-      "input_schema": {
-        "type": "object",
-        "properties": {
-          "tab_id": {
-            "type": "number",
-            "description": "ID of the tab to reload (optional, defaults to current tab)"
-          }
-        }
-      }
+      "description": "Reload a tab"
     },
     {
       "name": "go_back",
-      "description": "Navigate back in browser history",
-      "input_schema": {
-        "type": "object",
-        "properties": {
-          "tab_id": {
-            "type": "number",
-            "description": "ID of the tab (optional, defaults to current tab)"
-          }
-        }
-      }
+      "description": "Navigate back in browser history"
     },
     {
       "name": "go_forward",
-      "description": "Navigate forward in browser history",
-      "input_schema": {
-        "type": "object",
-        "properties": {
-          "tab_id": {
-            "type": "number",
-            "description": "ID of the tab (optional, defaults to current tab)"
-          }
-        }
-      }
+      "description": "Navigate forward in browser history"
     },
     {
       "name": "execute_javascript",
-      "description": "Execute JavaScript in the current tab",
-      "input_schema": {
-        "type": "object",
-        "properties": {
-          "code": {
-            "type": "string",
-            "description": "JavaScript code to execute"
-          },
-          "tab_id": {
-            "type": "number",
-            "description": "ID of the tab (optional, defaults to current tab)"
-          }
-        },
-        "required": ["code"]
-      }
+      "description": "Execute JavaScript in the current tab"
     },
     {
       "name": "get_page_content",
-      "description": "Get the text content of the current page",
-      "input_schema": {
-        "type": "object",
-        "properties": {
-          "tab_id": {
-            "type": "number",
-            "description": "ID of the tab (optional, defaults to current tab)"
-          }
-        }
-      }
+      "description": "Get the text content of the current page"
     }
   ],
   "server": {
