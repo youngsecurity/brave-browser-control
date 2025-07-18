@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-This is a Brave Browser Control extension for Claude Desktop that enables browser automation through AppleScript on macOS. It provides tools for tab management, navigation, page interaction, and JavaScript execution.
+This is a Brave Browser Control extension for Claude Desktop that enables browser automation through AppleScript on macOS. It provides tools for tab management, navigation, page interaction, and JavaScript execution via a Model Context Protocol (MCP) server.
 
 ## Development Commands
 
@@ -14,52 +14,82 @@ npm install
 
 # Run the MCP server
 npm start
+
+# Package the extension (rebuild .dxt file)
+npx @anthropic-ai/dxt pack
+
+# Validate manifest before packaging
+npx @anthropic-ai/dxt validate manifest.json
+
+# Clean and optimize existing .dxt file
+npx @anthropic-ai/dxt clean brave-browser-control.dxt
 ```
 
 ## Architecture
 
-The project implements a Model Context Protocol (MCP) server that bridges Claude Desktop with Brave Browser using AppleScript automation.
+The project implements an MCP server that bridges Claude Desktop with Brave Browser using AppleScript automation.
 
 ### Key Components
 
 - **server/index.js**: Main MCP server implementation
-  - Handles tool registration and request routing
-  - Executes AppleScript commands via `osascript`
-  - Implements error handling for permissions and browser state
+  - `BraveControlServer` class handles tool registration and request routing
+  - `executeAppleScript()` method executes AppleScript commands via `osascript`
+  - Comprehensive error handling for permissions and browser state
+  - All 9 browser control tools implemented in the `CallToolRequestSchema` handler
 
-### Available Tools
+### Tool Implementation Patterns
 
-All tools are implemented in server/index.js:31-445:
+All tools follow consistent patterns in server/index.js:
 
-1. **open_url** - Opens URLs in new or current tab
-2. **get_current_tab** - Returns active tab info (URL, title, ID)
-3. **list_tabs** - Lists all open tabs across windows
-4. **close_tab** - Closes tab by ID
-5. **switch_to_tab** - Switches to tab by ID
-6. **reload_tab** - Reloads current or specific tab
-7. **go_back/go_forward** - Browser history navigation
-8. **execute_javascript** - Runs JS in browser context
-9. **get_page_content** - Extracts page text with link URLs preserved
+1. **Tab ID Resolution**: Most tools accept optional `tab_id` parameter
 
-### AppleScript Integration
+   - If provided: Iterate through all windows/tabs to find matching ID
+   - If omitted: Operate on active tab of front window
 
-The server uses `osascript -e` to execute AppleScript commands that control Brave Browser. Key patterns:
+2. **AppleScript Execution**:
 
-- Tab operations iterate through all windows and tabs to find matches by ID
-- JavaScript execution properly escapes code for AppleScript strings
-- Error handling includes specific checks for:
-  - Permission denied (-1743): Requires System Settings > Privacy & Security > Automation
-  - Browser not running (-600): Brave must be launched
+   - Uses `osascript -e` for AppleScript commands
+   - Proper string escaping for JavaScript code injection
+   - Error handling for common issues:
+     - Permission denied (-1743): Automation permissions required
+     - Browser not running (-600): Brave must be launched
 
-### Security Considerations
+3. **JavaScript Injection**:
+   - `execute_javascript` tool properly escapes user code
+   - `get_page_content` uses custom DOM traversal to preserve link URLs
+   - Format: "link text [URL]" for extracted links
 
-- This extension can execute arbitrary JavaScript in browser tabs
+### Security Architecture
+
 - Requires macOS automation permissions for Brave Browser
-- All AppleScript strings must be properly escaped to prevent injection
+- Can execute arbitrary JavaScript in browser context
+- AppleScript strings must be properly escaped to prevent injection
+- Extension validates JavaScript URLs to filter out `javascript:void(0)`
+
+### Extension Packaging
+
+- **manifest.json**: DXT extension manifest with tool definitions
+- **brave-browser-control.dxt**: Built extension package (zip archive)
+- Platform requirement: macOS only (uses AppleScript)
+- Runtime requirement: Node.js >= 16.0.0
 
 ## GitHub Actions
 
-The project includes Claude Code GitHub Actions for automated PR reviews:
+The project includes Claude Code GitHub Actions:
 
 - **.github/workflows/claude-code-review.yml**: Automated PR review on open/sync
 - **.github/workflows/claude.yml**: Interactive Claude assistant triggered by @claude mentions
+
+## Development Notes
+
+- The `.dxt` file should not be committed to version control (added to .gitignore)
+- AppleScript error codes are well-documented in the error handling
+- Link preservation in `get_page_content` uses optimized array joining vs string concatenation
+- All tools return consistent JSON response format via MCP protocol
+
+## Version Management
+
+When updating the extension:
+1. Update version in both `manifest.json` and `package.json`
+2. Follow semantic versioning: `major.minor.patch`
+3. Current version: 0.1.2
