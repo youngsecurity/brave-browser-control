@@ -23,6 +23,7 @@ yarn-error.log*
 .env.test.local
 .env.production.local
 .venv/
+.venv/
 
 # Logs
 logs/
@@ -37,6 +38,7 @@ dist/
 build/
 out/
 *.dxt
+*.dxt
 
 # Temporary files
 tmp/
@@ -48,6 +50,7 @@ coverage/
 .nyc_output/
 
 # Optional npm cache directory
+.npm/
 .npm/
 
 # Optional eslint cache
