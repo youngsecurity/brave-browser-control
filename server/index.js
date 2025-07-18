@@ -379,34 +379,43 @@ class BraveControlServer {
 
           case 'get_page_content': {
             const { tab_id } = args;
+            
+            // Optimized JavaScript function for extracting page content with preserved links
+            const getContentWithLinksScript = `
+              function getContentWithLinks() {
+                function extractTextWithLinks(element) {
+                  const parts = [];
+                  for (let node of element.childNodes) {
+                    if (node.nodeType === Node.TEXT_NODE) {
+                      parts.push(node.textContent);
+                    } else if (node.nodeType === Node.ELEMENT_NODE) {
+                      if (node.tagName === 'A' && node.href) {
+                        const linkText = node.textContent.trim();
+                        const href = node.href;
+                        // Only include valid links with both text and href
+                        if (linkText && href && href !== 'javascript:void(0)') {
+                          parts.push(linkText + ' [' + href + ']');
+                        } else if (linkText) {
+                          parts.push(linkText);
+                        }
+                      } else {
+                        parts.push(extractTextWithLinks(node));
+                      }
+                    }
+                  }
+                  return parts.join('');
+                }
+                return extractTextWithLinks(document.body);
+              }
+              getContentWithLinks();
+            `;
+            
             const script = tab_id ? `
               tell application "Brave Browser"
                 repeat with w in windows
                   repeat with t in tabs of w
                     if (id of t as string) is "${tab_id}" then
-                      set pageContent to execute t javascript "
-                        function getContentWithLinks() {
-                          function extractTextWithLinks(element) {
-                            let result = '';
-                            for (let node of element.childNodes) {
-                              if (node.nodeType === Node.TEXT_NODE) {
-                                result += node.textContent;
-                              } else if (node.nodeType === Node.ELEMENT_NODE) {
-                                if (node.tagName === 'A' && node.href) {
-                                  const linkText = node.textContent.trim();
-                                  const href = node.href;
-                                  result += linkText + ' [' + href + ']';
-                                } else {
-                                  result += extractTextWithLinks(node);
-                                }
-                              }
-                            }
-                            return result;
-                          }
-                          return extractTextWithLinks(document.body);
-                        }
-                        getContentWithLinks();
-                      "
+                      set pageContent to execute t javascript "${getContentWithLinksScript}"
                       return pageContent
                     end if
                   end repeat
@@ -415,29 +424,7 @@ class BraveControlServer {
               end tell
             ` : `
               tell application "Brave Browser"
-                execute active tab of front window javascript "
-                  function getContentWithLinks() {
-                    function extractTextWithLinks(element) {
-                      let result = '';
-                      for (let node of element.childNodes) {
-                        if (node.nodeType === Node.TEXT_NODE) {
-                          result += node.textContent;
-                        } else if (node.nodeType === Node.ELEMENT_NODE) {
-                          if (node.tagName === 'A' && node.href) {
-                            const linkText = node.textContent.trim();
-                            const href = node.href;
-                            result += linkText + ' [' + href + ']';
-                          } else {
-                            result += extractTextWithLinks(node);
-                          }
-                        }
-                      }
-                      return result;
-                    }
-                    return extractTextWithLinks(document.body);
-                  }
-                  getContentWithLinks();
-                "
+                execute active tab of front window javascript "${getContentWithLinksScript}"
               end tell
             `;
             const result = await this.executeAppleScript(script);
