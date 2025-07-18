@@ -384,7 +384,29 @@ class BraveControlServer {
                 repeat with w in windows
                   repeat with t in tabs of w
                     if (id of t as string) is "${tab_id}" then
-                      set pageContent to execute t javascript "document.body.innerText"
+                      set pageContent to execute t javascript "
+                        function getContentWithLinks() {
+                          function extractTextWithLinks(element) {
+                            let result = '';
+                            for (let node of element.childNodes) {
+                              if (node.nodeType === Node.TEXT_NODE) {
+                                result += node.textContent;
+                              } else if (node.nodeType === Node.ELEMENT_NODE) {
+                                if (node.tagName === 'A' && node.href) {
+                                  const linkText = node.textContent.trim();
+                                  const href = node.href;
+                                  result += linkText + ' [' + href + ']';
+                                } else {
+                                  result += extractTextWithLinks(node);
+                                }
+                              }
+                            }
+                            return result;
+                          }
+                          return extractTextWithLinks(document.body);
+                        }
+                        getContentWithLinks();
+                      "
                       return pageContent
                     end if
                   end repeat
@@ -393,7 +415,29 @@ class BraveControlServer {
               end tell
             ` : `
               tell application "Brave Browser"
-                execute active tab of front window javascript "document.body.innerText"
+                execute active tab of front window javascript "
+                  function getContentWithLinks() {
+                    function extractTextWithLinks(element) {
+                      let result = '';
+                      for (let node of element.childNodes) {
+                        if (node.nodeType === Node.TEXT_NODE) {
+                          result += node.textContent;
+                        } else if (node.nodeType === Node.ELEMENT_NODE) {
+                          if (node.tagName === 'A' && node.href) {
+                            const linkText = node.textContent.trim();
+                            const href = node.href;
+                            result += linkText + ' [' + href + ']';
+                          } else {
+                            result += extractTextWithLinks(node);
+                          }
+                        }
+                      }
+                      return result;
+                    }
+                    return extractTextWithLinks(document.body);
+                  }
+                  getContentWithLinks();
+                "
               end tell
             `;
             const result = await this.executeAppleScript(script);
