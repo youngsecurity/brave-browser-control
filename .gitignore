@@ -22,6 +22,7 @@ yarn-error.log*
 .env.development.local
 .env.test.local
 .env.production.local
+.venv/
 
 # Logs
 logs/
@@ -35,6 +36,7 @@ lerna-debug.log*
 dist/
 build/
 out/
+*.dxt
 
 # Temporary files
 tmp/
@@ -46,12 +48,14 @@ coverage/
 .nyc_output/
 
 # Optional npm cache directory
-.npm
+.npm/
 
 # Optional eslint cache
 .eslintcache
 
 # Package manager files
-package-lock.json
 yarn.lock
 pnpm-lock.yaml 
+
+# Claude
+.claude/
