@@ -1,6 +1,6 @@
 {
   "name": "ant.dir.ant.TariqAlagha.brave-control",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "Control Brave Browser tabs, windows, and navigation",
   "main": "server/index.js",
   "type": "module",

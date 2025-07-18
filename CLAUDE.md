@@ -16,8 +16,13 @@ npm install
 npm start
 
 # Package the extension (rebuild .dxt file)
-# Note: The .dxt file is a zip archive containing the extension package
 npx @anthropic-ai/dxt pack
+
+# Validate manifest before packaging
+npx @anthropic-ai/dxt validate manifest.json
+
+# Clean and optimize existing .dxt file
+npx @anthropic-ai/dxt clean brave-browser-control.dxt
 ```
 
 ## Architecture
@@ -81,3 +86,10 @@ The project includes Claude Code GitHub Actions:
 - AppleScript error codes are well-documented in the error handling
 - Link preservation in `get_page_content` uses optimized array joining vs string concatenation
 - All tools return consistent JSON response format via MCP protocol
+
+## Version Management
+
+When updating the extension:
+1. Update version in both `manifest.json` and `package.json`
+2. Follow semantic versioning: `major.minor.patch`
+3. Current version: 0.1.2
