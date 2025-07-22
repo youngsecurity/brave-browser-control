@@ -9,6 +9,10 @@
     "name": "Tariq Alagha",
     "url": "https://github.com/TariqAlagha/brave-browser-control"
   },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/TariqAlagha/brave-browser-control"
+  },
   "homepage": "https://github.com/TariqAlagha",
   "documentation": "https://github.com/TariqAlagha/brave-browser-control",
   "support": "https://github.com/TariqAlagha",
