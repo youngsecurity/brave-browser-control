@@ -115,7 +115,10 @@ The project includes Claude Code GitHub Actions:
   - Closes Brave if running, launches with user's actual profile
   - User has access to bookmarks, history, passwords, extensions, settings
   - Cannot see currently open tabs from previous session
-  - Profile location: `%LOCALAPPDATA%\BraveSoftware\Brave-Browser\User Data\Default`
+  - **Profile Selection:**
+    - Default: Uses `Default` profile
+    - Custom: Set `BRAVE_PROFILE` environment variable (e.g., `Profile 1`, `Profile 2`)
+    - Profile location: `%LOCALAPPDATA%\BraveSoftware\Brave-Browser\User Data\{ProfileName}`
   - **If Brave already running:** Shows helpful error with two options:
     - Close Brave and try again, OR
     - Use remote debugging mode (Mode 2)

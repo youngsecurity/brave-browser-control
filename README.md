@@ -57,9 +57,28 @@ The extension automatically uses your Brave profile (bookmarks, history, passwor
 ### Basic Usage (No Setup Needed)
 1. **Close Brave** if it's currently running
 2. Use Claude Desktop to control Brave
-3. Extension will launch Brave with your profile automatically
+3. Extension will launch Brave with your Default profile automatically
 
 Your bookmarks, history, passwords, and extensions will all be available.
+
+### Selecting a Specific Profile
+If you have multiple Brave profiles and want to use a specific one:
+
+1. **Find your profile name:**
+   - Navigate to: `%LOCALAPPDATA%\BraveSoftware\Brave-Browser\User Data\`
+   - Look for folders like `Default`, `Profile 1`, `Profile 2`, etc.
+   - Note the exact folder name (e.g., `Profile 1`)
+
+2. **Set the environment variable in Claude Desktop config:**
+   - Open Claude Desktop settings
+   - Find the MCP servers configuration
+   - Add `BRAVE_PROFILE` environment variable to the brave-control server config
+   - Example value: `Profile 1`
+
+3. **Or set it system-wide:**
+   - Open System Properties → Environment Variables
+   - Add user variable: `BRAVE_PROFILE` = `Profile 1`
+   - Restart Claude Desktop
 
 ### Advanced: Control Currently Open Tabs (Optional)
 If you want to control tabs that are already open in your existing Brave window:

@@ -89,11 +89,14 @@ class BraveControlServer {
       const userDataDir = process.env.LOCALAPPDATA + '\\BraveSoftware\\Brave-Browser\\User Data';
 
       if (fs.existsSync(userDataDir)) {
-        // Use the user's Default profile
-        options.addArguments(`--user-data-dir=${userDataDir}`);
-        options.addArguments('--profile-directory=Default');
+        // Check if user specified a profile via environment variable
+        const profileName = process.env.BRAVE_PROFILE || 'Default';
 
-        console.error('✓ Using your Default Brave profile (bookmarks, history, extensions preserved)');
+        options.addArguments(`--user-data-dir=${userDataDir}`);
+        options.addArguments(`--profile-directory=${profileName}`);
+
+        console.error(`✓ Using Brave profile: "${profileName}"`);
+        console.error(`  (Set BRAVE_PROFILE environment variable to use a different profile)`);
       } else {
         console.error('⚠ Brave profile not found, using temporary profile');
       }
