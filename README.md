@@ -92,3 +92,11 @@ This extension requires access to control Brave Browser. It can:
 **Warning:** This extension provides powerful control over your browser. Only use it with trusted applications and be cautious about the commands you authorize. Since this tool can execute any JavaScript, it can potentially be used to perform malicious actions. Always review the scripts you are about to execute.
 
 Use with appropriate caution and only grant access when necessary.
+
+## Credits
+
+This project is based on the original work by [Tariq Alagha](https://github.com/TariqAlagha/brave-browser-control). Windows support and cross-platform enhancements added by [youngsecurity.net](https://youngsecurity.net).
+
+## License
+
+MIT License - See [LICENSE](LICENSE) file for details.

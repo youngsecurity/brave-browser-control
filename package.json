@@ -13,7 +13,7 @@
     "automation",
     "mcp"
   ],
-  "author": "Tariq Alagha",
+  "author": "youngsecurity.net",
   "license": "MIT",
   "dependencies": {
     "@modelcontextprotocol/sdk": "^0.6.0",
