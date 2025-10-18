@@ -39,42 +39,96 @@ class BraveControlServer {
       return this.driver;
     }
 
-    const options = new chrome.Options();
+    const fs = await import('fs');
 
-    // Try to find Brave browser executable on Windows
-    const bravePaths = [
-      'C:\\Program Files\\BraveSoftware\\Brave-Browser\\Application\\brave.exe',
-      'C:\\Program Files (x86)\\BraveSoftware\\Brave-Browser\\Application\\brave.exe',
-      process.env.LOCALAPPDATA + '\\BraveSoftware\\Brave-Browser\\Application\\brave.exe',
-    ];
+    // Try to connect to existing Brave instance on debugging port
+    const debugPort = 9222;
 
-    let bravePath = null;
-    for (const path of bravePaths) {
-      try {
-        const fs = await import('fs');
-        if (fs.existsSync(path)) {
-          bravePath = path;
-          break;
+    try {
+      // Try to connect to existing Brave instance first
+      const connectOptions = new chrome.Options();
+      connectOptions.debuggerAddress(`localhost:${debugPort}`);
+
+      this.driver = await new Builder()
+        .forBrowser('chrome')
+        .setChromeOptions(connectOptions)
+        .build();
+
+      console.error('✓ Connected to existing Brave instance on port', debugPort);
+      return this.driver;
+    } catch (connectError) {
+      // Connection failed, fall back to launching new instance with user's profile
+      console.error('Could not connect to existing Brave instance, launching with your profile...');
+
+      const options = new chrome.Options();
+
+      // Try to find Brave browser executable on Windows
+      const bravePaths = [
+        'C:\\Program Files\\BraveSoftware\\Brave-Browser\\Application\\brave.exe',
+        'C:\\Program Files (x86)\\BraveSoftware\\Brave-Browser\\Application\\brave.exe',
+        process.env.LOCALAPPDATA + '\\BraveSoftware\\Brave-Browser\\Application\\brave.exe',
+      ];
+
+      let bravePath = null;
+      for (const path of bravePaths) {
+        try {
+          if (fs.existsSync(path)) {
+            bravePath = path;
+            break;
+          }
+        } catch (e) {
+          // Continue to next path
         }
-      } catch (e) {
-        // Continue to next path
+      }
+
+      if (bravePath) {
+        options.setChromeBinaryPath(bravePath);
+      }
+
+      // Use the user's actual Brave profile directory
+      const userDataDir = process.env.LOCALAPPDATA + '\\BraveSoftware\\Brave-Browser\\User Data';
+
+      if (fs.existsSync(userDataDir)) {
+        // Use the user's Default profile
+        options.addArguments(`--user-data-dir=${userDataDir}`);
+        options.addArguments('--profile-directory=Default');
+
+        console.error('✓ Using your Default Brave profile (bookmarks, history, extensions preserved)');
+      } else {
+        console.error('⚠ Brave profile not found, using temporary profile');
+      }
+
+      // Disable automation flags
+      options.addArguments('--disable-blink-features=AutomationControlled');
+      options.excludeSwitches(['enable-automation']);
+
+      try {
+        this.driver = await new Builder()
+          .forBrowser('chrome')
+          .setChromeOptions(options)
+          .build();
+
+        console.error('✓ Brave launched with your profile data');
+        console.error('   Note: This is a new window - your currently open tabs are in a different session');
+
+        return this.driver;
+      } catch (profileError) {
+        // If profile is locked (Brave already running), show helpful message
+        if (profileError.message.includes('user data directory is already in use')) {
+          throw new Error(
+            'Cannot launch Brave - profile is already in use.\n\n' +
+            'Your main Brave browser is already running. You have two options:\n\n' +
+            '1. Close Brave and try again (extension will launch with your profile)\n' +
+            '2. Keep Brave open and restart it with remote debugging:\n' +
+            '   - Close all Brave windows\n' +
+            '   - Run: launch-brave-for-automation.bat\n' +
+            '   - Or manually add --remote-debugging-port=9222 to Brave shortcut\n\n' +
+            'Option 2 lets you control your currently open tabs.'
+          );
+        }
+        throw profileError;
       }
     }
-
-    if (bravePath) {
-      options.setChromeBinaryPath(bravePath);
-    }
-
-    // Connect to existing Brave session or launch new one
-    options.addArguments('--disable-blink-features=AutomationControlled');
-    options.excludeSwitches(['enable-automation']);
-
-    this.driver = await new Builder()
-      .forBrowser('chrome')
-      .setChromeOptions(options)
-      .build();
-
-    return this.driver;
   }
 
   async executeAppleScript(script) {

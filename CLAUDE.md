@@ -107,13 +107,29 @@ The project includes Claude Code GitHub Actions:
 - AppleScript controls existing Brave instances without launching new windows
 
 ### Windows
-- Requires ChromeDriver (compatible with Brave/Chrome version)
-- ChromeDriver must be in system PATH or same directory as Node.js
+- ChromeDriver is automatically included with the extension
+- **No setup required for basic usage** - extension uses your Brave profile automatically
+- **Two operating modes:**
+
+  **Mode 1: Launch with User Profile (Default)**
+  - Closes Brave if running, launches with user's actual profile
+  - User has access to bookmarks, history, passwords, extensions, settings
+  - Cannot see currently open tabs from previous session
+  - Profile location: `%LOCALAPPDATA%\BraveSoftware\Brave-Browser\User Data\Default`
+  - **If Brave already running:** Shows helpful error with two options:
+    - Close Brave and try again, OR
+    - Use remote debugging mode (Mode 2)
+
+  **Mode 2: Connect to Existing Instance (Advanced)**
+  - Requires launching Brave with: `brave.exe --remote-debugging-port=9222`
+  - Extension connects to already-running Brave instance
+  - Can control currently open tabs and windows in real-time
+  - Use provided `launch-brave-for-automation.bat` helper script
+
 - Extension automatically locates Brave in standard installation paths:
   - `C:\Program Files\BraveSoftware\Brave-Browser\Application\brave.exe`
   - `C:\Program Files (x86)\BraveSoftware\Brave-Browser\Application\brave.exe`
   - `%LOCALAPPDATA%\BraveSoftware\Brave-Browser\Application\brave.exe`
-- WebDriver will launch a new Brave instance or connect to existing session
 
 ## Development Notes
 

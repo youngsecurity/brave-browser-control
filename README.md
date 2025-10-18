@@ -42,13 +42,39 @@ Get the text content of a web page.
 
 - **macOS** or **Windows**
 - Brave Browser installed
-- **Windows only**: ChromeDriver (compatible with your Brave version)
-  - Download from: https://chromedriver.chromium.org/
-  - Must be in system PATH or same directory as Node.js
+- **Windows only**:
+  - ChromeDriver (automatically included with extension)
+  - **To control existing Brave tabs**: Launch Brave with remote debugging enabled (see setup below)
 
 ## Installation
 
 To install this extension for Claude Desktop, download and open the `brave-browser-control.dxt` file.
+
+## Windows Setup
+
+The extension automatically uses your Brave profile (bookmarks, history, passwords, extensions). No setup required!
+
+### Basic Usage (No Setup Needed)
+1. **Close Brave** if it's currently running
+2. Use Claude Desktop to control Brave
+3. Extension will launch Brave with your profile automatically
+
+Your bookmarks, history, passwords, and extensions will all be available.
+
+### Advanced: Control Currently Open Tabs (Optional)
+If you want to control tabs that are already open in your existing Brave window:
+
+**Option 1 - Use the helper script:**
+1. Run `launch-brave-for-automation.bat` from the extension directory
+2. Use this Brave window for automation
+
+**Option 2 - Manual setup:**
+1. Close all Brave windows
+2. Right-click your Brave shortcut → Properties
+3. In the "Target" field, add: ` --remote-debugging-port=9222`
+4. Launch Brave using this shortcut
+
+This advanced mode lets you see and control tabs that are already open.
 
 ## Security
 
