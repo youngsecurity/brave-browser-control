@@ -761,8 +761,8 @@ class BraveControlServer {
 // Export the class for testing
 export { BraveControlServer };
 
-// Only run the server if this is the main module
-if (import.meta.url === `file:///${process.argv[1].replace(/\\/g, '/')}`) {
+// Start the server (unless imported for testing with explicit flag)
+if (!process.env.BRAVE_CONTROL_NO_AUTO_START) {
   const server = new BraveControlServer();
   server.run().catch(console.error);
 }
