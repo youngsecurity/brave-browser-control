@@ -1,6 +1,6 @@
 # Brave Control Extension
 
-Control Brave Browser through Claude using AppleScript automation.
+Cross-platform browser automation for Claude Desktop. Control Brave Browser through Claude using native automation on macOS and Windows.
 
 ## Features
 
@@ -40,8 +40,11 @@ Get the text content of a web page.
 
 ## Requirements
 
-- macOS (uses AppleScript)
+- **macOS** or **Windows**
 - Brave Browser installed
+- **Windows only**: ChromeDriver (compatible with your Brave version)
+  - Download from: https://chromedriver.chromium.org/
+  - Must be in system PATH or same directory as Node.js
 
 ## Installation
 
@@ -49,12 +52,16 @@ To install this extension for Claude Desktop, download and open the `brave-brows
 
 ## Security
 
-This extension requires access to control Brave Browser through AppleScript. It can:
+This extension requires access to control Brave Browser. It can:
 - Read and modify web page content
 - Navigate to any URL
 - Execute JavaScript in browser tabs
 - Open, close, and switch between tabs
 - Access information about open tabs (URL, title)
+
+**Platform-specific permissions:**
+- **macOS**: Requires automation permissions in System Settings > Privacy & Security > Automation
+- **Windows**: Uses Selenium WebDriver to control the browser (may launch new browser instances)
 
 **Warning:** This extension provides powerful control over your browser. Only use it with trusted applications and be cautious about the commands you authorize. Since this tool can execute any JavaScript, it can potentially be used to perform malicious actions. Always review the scripts you are about to execute.
 

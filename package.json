@@ -1,6 +1,6 @@
 {
   "name": "ant.dir.ant.TariqAlagha.brave-control",
-  "version": "0.1.2",
+  "version": "0.2.0",
   "description": "Control Brave Browser tabs, windows, and navigation",
   "main": "server/index.js",
   "type": "module",
@@ -16,6 +16,10 @@
   "author": "Tariq Alagha",
   "license": "MIT",
   "dependencies": {
-    "@modelcontextprotocol/sdk": "^0.6.0"
+    "@modelcontextprotocol/sdk": "^0.6.0",
+    "selenium-webdriver": "^4.37.0"
+  },
+  "devDependencies": {
+    "chromedriver": "^141.0.3"
   }
 }

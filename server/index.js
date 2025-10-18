@@ -8,15 +8,20 @@ import {
 } from '@modelcontextprotocol/sdk/types.js';
 import { execFile } from 'child_process';
 import { promisify } from 'util';
+import { platform } from 'os';
+import { Builder, By, until } from 'selenium-webdriver';
+import chrome from 'selenium-webdriver/chrome.js';
 
 const execFileAsync = promisify(execFile);
+const IS_MACOS = platform() === 'darwin';
+const IS_WINDOWS = platform() === 'win32';
 
 class BraveControlServer {
   constructor() {
     this.server = new Server(
       {
         name: 'brave-control',
-        version: '0.1.0',
+        version: '0.2.0',
       },
       {
         capabilities: {
@@ -25,7 +30,51 @@ class BraveControlServer {
       }
     );
 
+    this.driver = null;
     this.setupHandlers();
+  }
+
+  async initializeWebDriver() {
+    if (this.driver) {
+      return this.driver;
+    }
+
+    const options = new chrome.Options();
+
+    // Try to find Brave browser executable on Windows
+    const bravePaths = [
+      'C:\\Program Files\\BraveSoftware\\Brave-Browser\\Application\\brave.exe',
+      'C:\\Program Files (x86)\\BraveSoftware\\Brave-Browser\\Application\\brave.exe',
+      process.env.LOCALAPPDATA + '\\BraveSoftware\\Brave-Browser\\Application\\brave.exe',
+    ];
+
+    let bravePath = null;
+    for (const path of bravePaths) {
+      try {
+        const fs = await import('fs');
+        if (fs.existsSync(path)) {
+          bravePath = path;
+          break;
+        }
+      } catch (e) {
+        // Continue to next path
+      }
+    }
+
+    if (bravePath) {
+      options.setChromeBinaryPath(bravePath);
+    }
+
+    // Connect to existing Brave session or launch new one
+    options.addArguments('--disable-blink-features=AutomationControlled');
+    options.excludeSwitches(['enable-automation']);
+
+    this.driver = await new Builder()
+      .forBrowser('chrome')
+      .setChromeOptions(options)
+      .build();
+
+    return this.driver;
   }
 
   async executeAppleScript(script) {
@@ -37,9 +86,9 @@ class BraveControlServer {
       return stdout.trim();
     } catch (error) {
       console.error('AppleScript execution error:', error);
-      
+
       // Check for common permission-related errors
-      if (error.message.includes('(-1743)') || 
+      if (error.message.includes('(-1743)') ||
           error.message.includes('not allowed assistive access') ||
           error.message.includes('not authorized') ||
           error.message.includes('System Events')) {
@@ -53,18 +102,220 @@ class BraveControlServer {
           'Note: You\'ll see a permission prompt the first time you use this extension.'
         );
       }
-      
+
       // Check for Chrome not running
-      if (error.message.includes('(-600)') || 
+      if (error.message.includes('(-600)') ||
           error.message.includes('application isn\'t running') ||
           error.message.includes('Brave Browser')) {
         throw new Error(
           'Brave Browser is not running. Please launch Brave and try again.'
         );
       }
-      
+
       throw new Error(`AppleScript error: ${error.message}`);
     }
+  }
+
+  // WebDriver methods for Windows
+  async openUrlWebDriver(url, new_tab = true) {
+    const driver = await this.initializeWebDriver();
+
+    if (new_tab) {
+      await driver.executeScript(`window.open('${url}', '_blank');`);
+      const handles = await driver.getAllWindowHandles();
+      await driver.switchTo().window(handles[handles.length - 1]);
+    } else {
+      await driver.get(url);
+    }
+
+    return `Opened ${url} in Brave`;
+  }
+
+  async getCurrentTabWebDriver() {
+    const driver = await this.initializeWebDriver();
+    const url = await driver.getCurrentUrl();
+    const title = await driver.getTitle();
+    const handle = await driver.getWindowHandle();
+
+    return JSON.stringify({ url, title, id: handle }, null, 2);
+  }
+
+  async listTabsWebDriver() {
+    const driver = await this.initializeWebDriver();
+    const handles = await driver.getAllWindowHandles();
+    const tabs = [];
+
+    const currentHandle = await driver.getWindowHandle();
+
+    for (const handle of handles) {
+      await driver.switchTo().window(handle);
+      const url = await driver.getCurrentUrl();
+      const title = await driver.getTitle();
+      tabs.push({ id: handle, url, title });
+    }
+
+    // Switch back to original tab
+    await driver.switchTo().window(currentHandle);
+
+    return JSON.stringify(tabs, null, 2);
+  }
+
+  async closeTabWebDriver(tab_id) {
+    const driver = await this.initializeWebDriver();
+    const handles = await driver.getAllWindowHandles();
+
+    if (!handles.includes(tab_id)) {
+      return 'Tab not found';
+    }
+
+    const currentHandle = await driver.getWindowHandle();
+    await driver.switchTo().window(tab_id);
+    await driver.close();
+
+    // Switch to another tab if we closed the current one
+    const remainingHandles = await driver.getAllWindowHandles();
+    if (remainingHandles.length > 0 && tab_id === currentHandle) {
+      await driver.switchTo().window(remainingHandles[0]);
+    }
+
+    return 'Tab closed';
+  }
+
+  async switchToTabWebDriver(tab_id) {
+    const driver = await this.initializeWebDriver();
+    const handles = await driver.getAllWindowHandles();
+
+    if (!handles.includes(tab_id)) {
+      return 'Tab not found';
+    }
+
+    await driver.switchTo().window(tab_id);
+    return 'Switched to tab';
+  }
+
+  async reloadTabWebDriver(tab_id = null) {
+    const driver = await this.initializeWebDriver();
+
+    if (tab_id) {
+      const handles = await driver.getAllWindowHandles();
+      if (!handles.includes(tab_id)) {
+        return 'Tab not found';
+      }
+      const currentHandle = await driver.getWindowHandle();
+      await driver.switchTo().window(tab_id);
+      await driver.navigate().refresh();
+      await driver.switchTo().window(currentHandle);
+    } else {
+      await driver.navigate().refresh();
+    }
+
+    return 'Tab reloaded';
+  }
+
+  async goBackWebDriver(tab_id = null) {
+    const driver = await this.initializeWebDriver();
+
+    if (tab_id) {
+      const handles = await driver.getAllWindowHandles();
+      if (!handles.includes(tab_id)) {
+        return 'Tab not found';
+      }
+      const currentHandle = await driver.getWindowHandle();
+      await driver.switchTo().window(tab_id);
+      await driver.navigate().back();
+      await driver.switchTo().window(currentHandle);
+    } else {
+      await driver.navigate().back();
+    }
+
+    return 'Navigated back';
+  }
+
+  async goForwardWebDriver(tab_id = null) {
+    const driver = await this.initializeWebDriver();
+
+    if (tab_id) {
+      const handles = await driver.getAllWindowHandles();
+      if (!handles.includes(tab_id)) {
+        return 'Tab not found';
+      }
+      const currentHandle = await driver.getWindowHandle();
+      await driver.switchTo().window(tab_id);
+      await driver.navigate().forward();
+      await driver.switchTo().window(currentHandle);
+    } else {
+      await driver.navigate().forward();
+    }
+
+    return 'Navigated forward';
+  }
+
+  async executeJavaScriptWebDriver(code, tab_id = null) {
+    const driver = await this.initializeWebDriver();
+
+    let result;
+    if (tab_id) {
+      const handles = await driver.getAllWindowHandles();
+      if (!handles.includes(tab_id)) {
+        return 'Tab not found';
+      }
+      const currentHandle = await driver.getWindowHandle();
+      await driver.switchTo().window(tab_id);
+      result = await driver.executeScript(code);
+      await driver.switchTo().window(currentHandle);
+    } else {
+      result = await driver.executeScript(code);
+    }
+
+    return result !== undefined ? String(result) : 'JavaScript executed';
+  }
+
+  async getPageContentWebDriver(tab_id = null) {
+    const driver = await this.initializeWebDriver();
+
+    const getContentWithLinksScript = `
+      function getContentWithLinks() {
+        function extractTextWithLinks(element) {
+          const parts = [];
+          for (let node of element.childNodes) {
+            if (node.nodeType === Node.TEXT_NODE) {
+              parts.push(node.textContent);
+            } else if (node.nodeType === Node.ELEMENT_NODE) {
+              if (node.tagName === 'A' && node.href) {
+                const linkText = node.textContent.trim();
+                const href = node.href;
+                if (linkText && href && href !== 'javascript:void(0)') {
+                  parts.push(linkText + ' [' + href + ']');
+                } else if (linkText) {
+                  parts.push(linkText);
+                }
+              } else {
+                parts.push(extractTextWithLinks(node));
+              }
+            }
+          }
+          return parts.join('');
+        }
+        return extractTextWithLinks(document.body);
+      }
+      return getContentWithLinks();
+    `;
+
+    let result;
+    if (tab_id) {
+      const handles = await driver.getAllWindowHandles();
+      if (!handles.includes(tab_id)) {
+        return 'Tab not found';
+      }
+      const currentHandle = await driver.getWindowHandle();
+      await driver.switchTo().window(tab_id);
+      result = await driver.executeScript(getContentWithLinksScript);
+      await driver.switchTo().window(currentHandle);
+    } else {
+      result = await driver.executeScript(getContentWithLinksScript);
+    }
+
+    return result;
   }
 
   setupHandlers() {
@@ -181,15 +432,26 @@ class BraveControlServer {
         switch (name) {
           case 'open_url': {
             const { url, new_tab = true } = args;
+
+            if (IS_WINDOWS) {
+              const result = await this.openUrlWebDriver(url, new_tab);
+              return { content: [{ type: 'text', text: result }] };
+            }
+
             const script = new_tab
               ? `tell application "Brave Browser" to open location "${url}"`
               : `tell application "Brave Browser" to set URL of active tab of front window to "${url}"`;
-            
+
             await this.executeAppleScript(script);
             return { content: [{ type: 'text', text: `Opened ${url} in Brave` }] };
           }
 
           case 'get_current_tab': {
+            if (IS_WINDOWS) {
+              const result = await this.getCurrentTabWebDriver();
+              return { content: [{ type: 'text', text: result }] };
+            }
+
             const script = `
               tell application "Brave Browser"
                 set currentTab to active tab of front window
@@ -208,6 +470,11 @@ class BraveControlServer {
           }
 
           case 'list_tabs': {
+            if (IS_WINDOWS) {
+              const result = await this.listTabsWebDriver();
+              return { content: [{ type: 'text', text: result }] };
+            }
+
             const script = `
               tell application "Brave Browser"
                 set tabsList to {}
@@ -239,6 +506,12 @@ class BraveControlServer {
 
           case 'close_tab': {
             const { tab_id } = args;
+
+            if (IS_WINDOWS) {
+              const result = await this.closeTabWebDriver(tab_id);
+              return { content: [{ type: 'text', text: result }] };
+            }
+
             const script = `
               tell application "Brave Browser"
                 repeat with w in windows
@@ -258,6 +531,12 @@ class BraveControlServer {
 
           case 'switch_to_tab': {
             const { tab_id } = args;
+
+            if (IS_WINDOWS) {
+              const result = await this.switchToTabWebDriver(tab_id);
+              return { content: [{ type: 'text', text: result }] };
+            }
+
             const script = `
               tell application "Brave Browser"
                 repeat with w in windows
@@ -280,6 +559,12 @@ class BraveControlServer {
 
           case 'reload_tab': {
             const { tab_id } = args;
+
+            if (IS_WINDOWS) {
+              const result = await this.reloadTabWebDriver(tab_id);
+              return { content: [{ type: 'text', text: result }] };
+            }
+
             const script = tab_id ? `
               tell application "Brave Browser"
                 repeat with w in windows
@@ -304,6 +589,12 @@ class BraveControlServer {
 
           case 'go_back': {
             const { tab_id } = args;
+
+            if (IS_WINDOWS) {
+              const result = await this.goBackWebDriver(tab_id);
+              return { content: [{ type: 'text', text: result }] };
+            }
+
             const script = tab_id ? `
               tell application "Brave Browser"
                 repeat with w in windows
@@ -328,6 +619,12 @@ class BraveControlServer {
 
           case 'go_forward': {
             const { tab_id } = args;
+
+            if (IS_WINDOWS) {
+              const result = await this.goForwardWebDriver(tab_id);
+              return { content: [{ type: 'text', text: result }] };
+            }
+
             const script = tab_id ? `
               tell application "Brave Browser"
                 repeat with w in windows
@@ -352,6 +649,12 @@ class BraveControlServer {
 
           case 'execute_javascript': {
             const { code, tab_id } = args;
+
+            if (IS_WINDOWS) {
+              const result = await this.executeJavaScriptWebDriver(code, tab_id);
+              return { content: [{ type: 'text', text: result }] };
+            }
+
             // For AppleScript strings, we need to escape backslashes and double quotes
             const escapedCode = code
               .replace(/\\/g, '\\\\')  // Escape backslashes first
@@ -379,7 +682,12 @@ class BraveControlServer {
 
           case 'get_page_content': {
             const { tab_id } = args;
-            
+
+            if (IS_WINDOWS) {
+              const result = await this.getPageContentWebDriver(tab_id);
+              return { content: [{ type: 'text', text: result }] };
+            }
+
             // Optimized JavaScript function for extracting page content with preserved links
             const getContentWithLinksScript = `
               function getContentWithLinks() {
@@ -409,7 +717,7 @@ class BraveControlServer {
               }
               getContentWithLinks();
             `;
-            
+
             const script = tab_id ? `
               tell application "Brave Browser"
                 repeat with w in windows
@@ -450,5 +758,11 @@ class BraveControlServer {
   }
 }
 
-const server = new BraveControlServer();
-server.run().catch(console.error);
+// Export the class for testing
+export { BraveControlServer };
+
+// Only run the server if this is the main module
+if (import.meta.url === `file:///${process.argv[1].replace(/\\/g, '/')}`) {
+  const server = new BraveControlServer();
+  server.run().catch(console.error);
+}
