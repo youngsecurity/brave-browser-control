@@ -114,20 +114,20 @@ The project includes Claude Code GitHub Actions:
   **Mode 1: Launch with User Profile (Default)**
   - Closes Brave if running, launches with user's actual profile
   - User has access to bookmarks, history, passwords, extensions, settings
-  - Cannot see currently open tabs from previous session
+  - **Automatically restores all tabs from previous session** using `--restore-last-session` flag
   - **Profile Selection:**
     - Default: Uses `Default` profile
     - Custom: Set `BRAVE_PROFILE` environment variable (e.g., `Profile 1`, `Profile 2`)
     - Profile location: `%LOCALAPPDATA%\BraveSoftware\Brave-Browser\User Data\{ProfileName}`
   - **If Brave already running:** Shows helpful error with two options:
-    - Close Brave and try again, OR
+    - Close Brave and try again (tabs will restore), OR
     - Use remote debugging mode (Mode 2)
 
   **Mode 2: Connect to Existing Instance (Advanced)**
   - Requires launching Brave with: `brave.exe --remote-debugging-port=9222`
   - Extension connects to already-running Brave instance
   - Can control currently open tabs and windows in real-time
-  - Use provided `launch-brave-for-automation.bat` helper script
+  - Add `--remote-debugging-port=9222` to Brave shortcut Target field
 
 - Extension automatically locates Brave in standard installation paths:
   - `C:\Program Files\BraveSoftware\Brave-Browser\Application\brave.exe`

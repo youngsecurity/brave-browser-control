@@ -101,9 +101,12 @@ class BraveControlServer {
         console.error('⚠ Brave profile not found, using temporary profile');
       }
 
-      // Disable automation flags
+      // Disable automation flags to make Brave behave normally
       options.addArguments('--disable-blink-features=AutomationControlled');
       options.excludeSwitches(['enable-automation']);
+
+      // Restore previous session (all tabs from last time)
+      options.addArguments('--restore-last-session');
 
       try {
         this.driver = await new Builder()
@@ -111,8 +114,9 @@ class BraveControlServer {
           .setChromeOptions(options)
           .build();
 
-        console.error('✓ Brave launched with your profile data');
-        console.error('   Note: This is a new window - your currently open tabs are in a different session');
+        console.error('✓ Brave launched with your profile');
+        console.error('✓ All your previous tabs should be restored');
+        console.error(`✓ Using profile: "${process.env.BRAVE_PROFILE || 'Default'}"`);
 
         return this.driver;
       } catch (profileError) {
@@ -121,12 +125,12 @@ class BraveControlServer {
           throw new Error(
             'Cannot launch Brave - profile is already in use.\n\n' +
             'Your main Brave browser is already running. You have two options:\n\n' +
-            '1. Close Brave and try again (extension will launch with your profile)\n' +
-            '2. Keep Brave open and restart it with remote debugging:\n' +
+            '1. Close Brave and try again (extension will launch with your profile and restore tabs)\n' +
+            '2. Keep Brave open and enable remote debugging:\n' +
             '   - Close all Brave windows\n' +
-            '   - Run: launch-brave-for-automation.bat\n' +
-            '   - Or manually add --remote-debugging-port=9222 to Brave shortcut\n\n' +
-            'Option 2 lets you control your currently open tabs.'
+            '   - Add --remote-debugging-port=9222 to your Brave shortcut Target field\n' +
+            '   - Launch Brave using that shortcut\n\n' +
+            'Option 2 lets you control your currently open tabs in real-time.'
           );
         }
         throw profileError;

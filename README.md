@@ -80,20 +80,26 @@ If you have multiple Brave profiles and want to use a specific one:
    - Add user variable: `BRAVE_PROFILE` = `Profile 1`
    - Restart Claude Desktop
 
-### Advanced: Control Currently Open Tabs (Optional)
-If you want to control tabs that are already open in your existing Brave window:
+### How Tab Restoration Works
 
-**Option 1 - Use the helper script:**
-1. Run `launch-brave-for-automation.bat` from the extension directory
-2. Use this Brave window for automation
+**Automatic Tab Restoration (Default):**
+When you close Brave, the extension automatically remembers and restores all your previously open tabs the next time it launches Brave. Just:
 
-**Option 2 - Manual setup:**
+1. **Close Brave** if it's running
+2. Use Claude Desktop to control Brave
+3. **All your previous tabs will restore automatically!**
+
+The extension uses the `--restore-last-session` flag to bring back all your tabs from the last session.
+
+**Advanced: Control Currently Open Tabs (Optional)**
+
+If you want to control tabs that are ALREADY open in a running Brave instance:
+
 1. Close all Brave windows
 2. Right-click your Brave shortcut → Properties
-3. In the "Target" field, add: ` --remote-debugging-port=9222`
-4. Launch Brave using this shortcut
-
-This advanced mode lets you see and control tabs that are already open.
+3. In the "Target" field, add to the end: ` --remote-debugging-port=9222`
+4. Launch Brave using this modified shortcut
+5. Claude Desktop can now control your currently open tabs in real-time
 
 ## Security
 
