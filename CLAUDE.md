@@ -114,13 +114,14 @@ The project includes Claude Code GitHub Actions:
   **Mode 1: Launch with User Profile (Default)**
   - Closes Brave if running, launches with user's actual profile
   - User has access to bookmarks, history, passwords, extensions, settings
-  - **Automatically restores all tabs from previous session** using `--restore-last-session` flag
+  - **Does NOT automatically restore tabs** (WebDriver limitation - session restore unreliable)
+  - Users can restore tabs manually with `Ctrl+Shift+T` (recently closed tabs)
   - **Profile Selection:**
     - Default: Uses `Default` profile
     - Custom: Set `BRAVE_PROFILE` environment variable (e.g., `Profile 1`, `Profile 2`)
     - Profile location: `%LOCALAPPDATA%\BraveSoftware\Brave-Browser\User Data\{ProfileName}`
   - **If Brave already running:** Shows helpful error with two options:
-    - Close Brave and try again (tabs will restore), OR
+    - Close Brave and try again, OR
     - Use remote debugging mode (Mode 2)
 
   **Mode 2: Connect to Existing Instance (Advanced)**

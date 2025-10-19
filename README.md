@@ -80,16 +80,15 @@ If you have multiple Brave profiles and want to use a specific one:
    - Add user variable: `BRAVE_PROFILE` = `Profile 1`
    - Restart Claude Desktop
 
-### How Tab Restoration Works
+### Tab Management
 
-**Automatic Tab Restoration (Default):**
-When you close Brave, the extension automatically remembers and restores all your previously open tabs the next time it launches Brave. Just:
-
+**Basic Usage (Default Mode):**
 1. **Close Brave** if it's running
 2. Use Claude Desktop to control Brave
-3. **All your previous tabs will restore automatically!**
+3. Extension launches Brave with your profile (bookmarks, history, passwords, extensions)
+4. **To restore your tabs:** Press `Ctrl+Shift+T` in Brave to reopen recently closed tabs
 
-The extension uses the `--restore-last-session` flag to bring back all your tabs from the last session.
+**Note:** The extension does NOT automatically restore previously open tabs. Brave's session restore feature doesn't work reliably when launched via WebDriver. Use Brave's built-in "Recently Closed" feature (`Ctrl+Shift+T`) to restore tabs you need.
 
 **Advanced: Control Currently Open Tabs (Optional)**
 
@@ -100,6 +99,8 @@ If you want to control tabs that are ALREADY open in a running Brave instance:
 3. In the "Target" field, add to the end: ` --remote-debugging-port=9222`
 4. Launch Brave using this modified shortcut
 5. Claude Desktop can now control your currently open tabs in real-time
+
+This mode lets you work with tabs you already have open without closing Brave first.
 
 ## Security
 

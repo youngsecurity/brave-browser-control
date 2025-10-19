@@ -105,9 +105,6 @@ class BraveControlServer {
       options.addArguments('--disable-blink-features=AutomationControlled');
       options.excludeSwitches(['enable-automation']);
 
-      // Restore previous session (all tabs from last time)
-      options.addArguments('--restore-last-session');
-
       try {
         this.driver = await new Builder()
           .forBrowser('chrome')
@@ -115,8 +112,8 @@ class BraveControlServer {
           .build();
 
         console.error('✓ Brave launched with your profile');
-        console.error('✓ All your previous tabs should be restored');
         console.error(`✓ Using profile: "${process.env.BRAVE_PROFILE || 'Default'}"`);
+        console.error('  Note: Use Ctrl+Shift+T in Brave to restore recently closed tabs');
 
         return this.driver;
       } catch (profileError) {
@@ -125,7 +122,8 @@ class BraveControlServer {
           throw new Error(
             'Cannot launch Brave - profile is already in use.\n\n' +
             'Your main Brave browser is already running. You have two options:\n\n' +
-            '1. Close Brave and try again (extension will launch with your profile and restore tabs)\n' +
+            '1. Close Brave and try again (extension will launch with your profile)\n' +
+            '   Tip: Use Ctrl+Shift+T in Brave to restore recently closed tabs\n' +
             '2. Keep Brave open and enable remote debugging:\n' +
             '   - Close all Brave windows\n' +
             '   - Add --remote-debugging-port=9222 to your Brave shortcut Target field\n' +
